@@ -3,9 +3,8 @@ package com.lyl
 import java.util
 
 import kafka.serializer.StringDecoder
-import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
-import org.apache.spark.streaming.kafka010.KafkaUtils
+import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
@@ -28,16 +27,25 @@ object MyScala {
 
     val Array(brokers, topics) = args
 
-    val sparkConf = new SparkConf().setAppName("DirectKafkaWorkCount")
+    // Create context with 2 second batch interval
+    val sparkConf = new SparkConf().setAppName("DirectKafkaWordCount").setMaster("local[2]").set("spark.executor.memory","3g")
     val ssc = new StreamingContext(sparkConf, Seconds(2))
-    val topicSet = topics.split(",").toSet
-    val props = new util.HashMap[String, Object]()
-    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokers)
-    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-      "org.apache.kafka.common.serialization.StringSerializer")
-    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-      "org.apache.kafka.common.serialization.StringSerializer")
-    val messages = KafkaUtils.createDirectStream[String, String](ssc, props, topicSet)
+
+    // Create direct kafka stream with brokers and topics
+    val topicsSet = topics.split(",").toSet
+    val kafkaParams = Map[String, String]("metadata.broker.list" -> brokers)
+    val messages = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
+      ssc, kafkaParams, topicsSet)
+
+    // Get the lines, split them into words, count the words and print
+    val lines = messages.map(_._2)
+    val words = lines.flatMap(_.split(" "))
+    val wordCounts = words.map(x => (x, 1L)).reduceByKey(_ + _)
+    wordCounts.print()
+
+    // Start the computation
+    ssc.start()
+    ssc.awaitTermination()
   }
 
   def testKafkaProducer() = {
