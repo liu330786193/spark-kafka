@@ -2,7 +2,7 @@ package com.lyl
 
 import java.util
 
-import com.timevale.cat.api.jvm.JvmDTO
+import com.tsign.cat.api.jvm.JvmDTO
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.{SparkConf, SparkContext}

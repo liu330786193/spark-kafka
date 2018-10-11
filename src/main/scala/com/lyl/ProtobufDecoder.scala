@@ -1,6 +1,6 @@
 package com.lyl
 
-import com.timevale.cat.api.jvm.JvmDTO
+import com.tsign.cat.api.jvm.JvmDTO
 import io.protostuff.ProtobufIOUtil
 import io.protostuff.runtime.RuntimeSchema
 import kafka.serializer.Decoder

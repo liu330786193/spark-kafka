@@ -1,8 +1,6 @@
 package com.lyl;
 
 import org.apache.spark.SparkConf;
-import scala.collection.Map;
-import scala.tools.nsc.doc.model.Val;
 
 
 public class JavaLocalFileTest {
